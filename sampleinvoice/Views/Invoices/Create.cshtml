@@ -1,0 +1,272 @@
+﻿@model sampleinvoice.Models.Invoice
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>New Invoice</h1>
+
+<form asp-action="Create" method="post" class="row g-3">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="Date" class="control-label">Invoice Date</label>
+                <input asp-for="Date" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Customer" class="control-label">Customer Name</label>
+                        <input asp-for="Customer" class="form-control" />
+                        <span asp-validation-for="Customer" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="CustomerPO" class="control-label">Customer PO</label>
+                        <input asp-for="CustomerPO" class="form-control" />
+                        <span asp-validation-for="CustomerPO" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+      @*   <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
+                <input asp-for="InvoiceNumber" class="form-control" readonly />
+                <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+            </div>
+        </div> *@
+
+        <!-- Button to add products -->
+        <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
+
+        <!-- Product table -->
+        <table id="productTable" class="table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                <!-- Product rows will be dynamically added here -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td><label for="totalAmount">Total:</label></td>
+                    <td id="totalAmount">0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Invoice Items (hidden) -->
+        <input type="hidden" id="invoiceItems" name="invoiceItems" />
+
+        <div class="col-md-3">
+            <!-- Currency Selection -->
+            <div class="form-group">
+                <label asp-for="Currency" class="control-label">Currency</label>
+                <select asp-for="Currency" class="form-control">
+                    <option value="INR" selected>INR</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <!-- Payment Method Selection -->
+            <div class="form-group">
+                <label asp-for="PaymentMethod" class="control-label">Payment Method</label>
+                <select asp-for="PaymentMethod" class="form-control">
+                    <option value="Cash" selected>Cash</option>
+                    <option value="CreditCard">Credit Card</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="BankTransfer">Bank Transfer</option>
+                </select>
+            </div>
+        </div>
+
+
+
+        <!-- VAT Percentage -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="vatPercentage">VAT Percentage</label>
+                <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" />
+            </div>
+        </div>
+
+        <!-- VAT Amount -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label>VAT Amount</label>
+                <input id="vatAmount" class="form-control" readonly />
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="FreightCharge" class="control-label">Freight Charge</label>
+                <input asp-for="FreightCharge" class="form-control" />
+                <span asp-validation-for="FreightCharge" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+</form>
+
+<!-- Modal for adding product details -->
+<div class="modal" id="addProductModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Product Details</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" class="form-control" id="productName">
+                </div>
+                <div class="form-group">
+                    <label for="productQuantity">Quantity</label>
+                    <input type="number" class="form-control" id="productQuantity">
+                </div>
+                <div class="form-group">
+                    <label for="productUnitCost">Unit Cost</label>
+                    <input type="number" class="form-control" id="productUnitCost">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="addProduct">Add Product</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // JavaScript code for handling dynamic addition of products and calculations
+        $(document).ready(function () {
+            // Add product button click event
+            $("#addProductButton").click(function () {
+                $("#addProductModal").modal("show");
+            });
+
+            // Add product modal button click event
+            $("#addProduct").click(function () {
+                var productName = $("#productName").val();
+                var productQuantity = $("#productQuantity").val();
+                var productUnitCost = $("#productUnitCost").val();
+                var subtotal = productQuantity * productUnitCost;
+
+                // Append new row to the product table
+                $("#productTableBody").append(
+                    "<tr>" +
+                    "<td>" + productName + "</td>" +
+                    "<td>" + productQuantity + "</td>" +
+                    "<td>" + productUnitCost + "</td>" +
+                    "<td>" + subtotal.toFixed(2) + "</td>" +
+                    "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
+                    "</tr>"
+                );
+
+                // Calculate total amount
+                var totalAmount = 0;
+                $("#productTableBody tr").each(function () {
+                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
+                });
+
+                // Update total amount in the footer
+                $("#totalAmount").text(totalAmount.toFixed(2));
+
+                // Calculate VAT amount
+                var vatPercentage = parseFloat($("#vatPercentage").val());
+                var vatAmount = (vatPercentage / 100) * totalAmount;
+
+                // Update VAT amount
+                $("#vatAmount").val(vatAmount.toFixed(2));
+
+                // Clear modal inputs
+                $("#productName").val("");
+                $("#productQuantity").val("");
+                $("#productUnitCost").val("");
+
+                // Close modal
+                $("#addProductModal").modal("hide");
+            });
+
+            // Delete product button click event
+            $(document).on("click", ".deleteProduct", function () {
+                $(this).closest("tr").remove();
+
+                // Recalculate total amount
+                var totalAmount = 0;
+                $("#productTableBody tr").each(function () {
+                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
+                });
+
+                // Update total amount in the footer
+                $("#totalAmount").text(totalAmount.toFixed(2));
+
+                // Recalculate VAT amount
+                var vatPercentage = parseFloat($("#vatPercentage").val());
+                var vatAmount = (vatPercentage / 100) * totalAmount;
+
+                // Update VAT amount
+                $("#vatAmount").val(vatAmount.toFixed(2));
+            });
+
+            // Calculate VAT amount on VAT percentage change
+            $("#vatPercentage").on("input", function () {
+                var vatPercentage = parseFloat($(this).val());
+                var totalAmount = parseFloat($("#totalAmount").text());
+                var vatAmount = (vatPercentage / 100) * totalAmount;
+
+                $("#vatAmount").val(vatAmount.toFixed(2));
+            });
+        });
+
+        // Function to prepare invoice items
+        function prepareInvoiceItems() {
+            // Prepare invoice items as JSON and set it in the hidden field
+            var invoiceItems = [];
+
+            $("#productTableBody tr").each(function () {
+                var productName = $(this).find("td:eq(0)").text();
+                var quantity = $(this).find("td:eq(1)").text();
+                var unitCost = $(this).find("td:eq(2)").text();
+
+                var item = {
+                    Product: productName,
+                    Quantity: quantity,
+                    UnitPrice: unitCost
+                };
+
+                invoiceItems.push(item);
+            });
+
+            // Set the serialized JSON in the hidden input field
+            $("#invoiceItems").val(JSON.stringify(invoiceItems));
+        }
+
+        // Attach the prepareInvoiceItems function to form submission
+        $("form").submit(function () {
+            prepareInvoiceItems();
+        });
+    </script>
+}

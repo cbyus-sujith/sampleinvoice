@@ -1,0 +1,120 @@
+﻿@model sampleinvoice.Models.Invoice
+
+<h1>Invoice Details</h1>
+
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.InvoiceNumber">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="Date" class="control-label">Invoice Date</label>
+                <input asp-for="Date" class="form-control" type="date" value="@Model.Date.ToShortDateString()" readonly />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Customer" class="control-label">Customer Name</label>
+                        <input asp-for="Customer" class="form-control" readonly />
+                        <span asp-validation-for="Customer" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="CustomerPO" class="control-label">Customer PO</label>
+                        <input asp-for="CustomerPO" class="form-control" readonly />
+                        <span asp-validation-for="CustomerPO" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
+                <input asp-for="InvoiceNumber" class="form-control" readonly />
+                <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+            </div>
+        </div>
+    <!-- Product table -->
+    <table id="productTable" class="table" readonly>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Unit Cost</th>
+                <th>Subtotal</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="productTableBody">
+            <!-- Product rows will be dynamically added here -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"></td>
+                <td><label for="totalAmount">Total:</label></td>
+                <td id="totalAmount">0.00</td>
+            </tr>
+        </tfoot>
+    </table>
+    <!-- Invoice Items (hidden) -->
+    <input type="hidden" id="invoiceItems" name="invoiceItems" readonly />
+
+    <div class="col-md-3">
+        <!-- Currency Selection -->
+        <div class="form-group">
+            <label asp-for="Currency" class="control-label">Currency</label>
+            <select asp-for="Currency" class="form-control" readonly>
+                <option value="INR" selected>INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <!-- Payment Method Selection -->
+        <div class="form-group">
+            <label asp-for="PaymentMethod" class="control-label">Payment Method</label>
+            <select asp-for="PaymentMethod" class="form-control" readonly>
+                <option value="Cash" selected>Cash</option>
+                <option value="CreditCard">Credit Card</option>
+                <option value="PayPal">PayPal</option>
+                <option value="BankTransfer">Bank Transfer</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- VAT Percentage -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="vatPercentage">VAT Percentage</label>
+            <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" readonly />
+        </div>
+    </div>
+
+    <!-- VAT Amount -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label>VAT Amount</label>
+            <input id="vatAmount" class="form-control" readonly />
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="form-group">
+            <label asp-for="FreightCharge" class="control-label">Freight Charge</label>
+            <input asp-for="FreightCharge" class="form-control" readonly />
+            <span asp-validation-for="FreightCharge" class="text-danger"></span>
+        </div>
+    </div>
+

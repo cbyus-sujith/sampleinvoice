@@ -1,0 +1,35 @@
+﻿@model List<sampleinvoice.Models.Invoice>
+
+<h2>Invoices</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Invoice Number</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Customer PO</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invoice in Model)
+        {
+            <tr>
+                <td>@invoice.InvoiceNumber</td>
+                <td>@invoice.Customer</td>
+                <td>@invoice.Date.ToShortDateString()</td>
+                <td>@invoice.CustomerPO</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@invoice.InvoiceNumber">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@invoice.InvoiceNumber">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@invoice.InvoiceNumber">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

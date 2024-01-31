@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sampleinvoice", "sampleinvoice\sampleinvoice.csproj", "{3419265E-6F79-49AA-AD51-C5D26C2206DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3419265E-6F79-49AA-AD51-C5D26C2206DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3419265E-6F79-49AA-AD51-C5D26C2206DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3419265E-6F79-49AA-AD51-C5D26C2206DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3419265E-6F79-49AA-AD51-C5D26C2206DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B211A6C1-1DF9-4F98-9924-ADB933157D0F}
+	EndGlobalSection
+EndGlobal
