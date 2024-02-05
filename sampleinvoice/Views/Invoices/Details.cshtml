@@ -51,11 +51,18 @@
                 <th>Quantity</th>
                 <th>Unit Cost</th>
                 <th>Subtotal</th>
-                <th>Action</th>
             </tr>
         </thead>
         <tbody id="productTableBody">
-            <!-- Product rows will be dynamically added here -->
+            @foreach (var item in Model.InvoiceItems)
+            {
+                <tr>
+                    <td>@item.Product</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice</td>
+                    <td>@(item.Quantity * item.UnitPrice)</td>
+                </tr>
+            }
         </tbody>
         <tfoot>
             <tr>
@@ -65,6 +72,7 @@
             </tr>
         </tfoot>
     </table>
+
     <!-- Invoice Items (hidden) -->
     <input type="hidden" id="invoiceItems" name="invoiceItems" readonly />
 
@@ -98,7 +106,8 @@
     <div class="col-md-3">
         <div class="form-group">
             <label for="vatPercentage">VAT Percentage</label>
-            <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" readonly />
+            <!-- Populate the VAT percentage value from the model -->
+            <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" value="@Model.VatPercentage" readonly />
         </div>
     </div>
 
@@ -117,4 +126,27 @@
             <span asp-validation-for="FreightCharge" class="text-danger"></span>
         </div>
     </div>
+    @section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Function to calculate total amount
+            function calculateTotal() {
+                var totalAmount = 0;
+                $("#productTableBody tr").each(function () {
+                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
+                });
+                // Update total amount in the footer
+                $("#totalAmount").text(totalAmount.toFixed(2));
 
+                // Calculate VAT amount
+                var vatPercentage = parseFloat($("#vatPercentage").val());
+                var vatAmount = (vatPercentage / 100) * totalAmount;
+                // Update VAT amount
+                $("#vatAmount").val(vatAmount.toFixed(2));
+            }
+
+            // Call calculateTotal initially
+            calculateTotal();
+        });
+    </script>
+    }

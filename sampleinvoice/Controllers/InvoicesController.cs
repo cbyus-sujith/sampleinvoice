@@ -68,37 +68,57 @@ namespace sampleinvoice.Controllers
                 return NotFound();
             }
 
-            var invoice = await _context.Invoices.FindAsync(id);
+            var invoice = await _context.Invoices.Include(i => i.InvoiceItems).FirstOrDefaultAsync(i => i.InvoiceNumber == id);
+
             if (invoice == null)
             {
                 return NotFound();
             }
+
             return View(invoice);
         }
 
         // POST: Invoices/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("InvoiceNumber,Customer,Date,CustomerPO,Currency,PaymentMethod,VatPercentage,FreightCharge")] Invoice invoice)
+        public async Task<IActionResult> Edit(int id, [Bind("InvoiceNumber,Customer,Date,CustomerPO,Currency,PaymentMethod,VatPercentage,FreightCharge")] Invoice invoice, string invoiceItems)
         {
             if (id != invoice.InvoiceNumber)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            try
             {
-                try
+                // Remove existing items associated with the invoice
+                var existingItems = _context.InvoiceItems.Where(item => item.InvoiceNumber == id);
+                _context.InvoiceItems.RemoveRange(existingItems);
+
+                // Deserialize the incoming JSON string of invoice items
+                var items = JsonConvert.DeserializeObject<List<InvoiceItem>>(invoiceItems);
+
+                // Update invoice details
+                _context.Update(invoice);
+
+                // Associate each item with the invoice number and add it to the database
+                foreach (var item in items)
                 {
-                    _context.Update(invoice);
-                    await _context.SaveChangesAsync();
+                    // Set the invoice number for each item
+                    item.InvoiceNumber = invoice.InvoiceNumber;
+                    _context.InvoiceItems.Add(item);
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    ModelState.AddModelError("", "Unable to save changes. " + id);
-                }
+
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Unable to save changes. " + ex.Message);
+                return RedirectToAction(nameof(Index));
+            }
+
             return View(invoice);
         }
 
@@ -110,7 +130,7 @@ namespace sampleinvoice.Controllers
                 return NotFound();
             }
 
-            var invoice = await _context.Invoices.FirstOrDefaultAsync(m => m.InvoiceNumber == id);
+            var invoice = await _context.Invoices.Include(i => i.InvoiceItems).FirstOrDefaultAsync(i => i.InvoiceNumber == id);
 
             if (invoice == null)
             {
@@ -145,49 +165,6 @@ namespace sampleinvoice.Controllers
         {
             var invoice = await _context.Invoices.FindAsync(id);
             _context.Invoices.Remove(invoice);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Add Action for adding Invoice Items
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddItem(int invoiceNumber, [Bind("Product,UnitPrice,Quantity")] InvoiceItem item)
-        {
-            var invoice = await _context.Invoices.Include(i => i.InvoiceItems).FirstOrDefaultAsync(i => i.InvoiceNumber == invoiceNumber);
-
-            if (invoice == null)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                invoice.InvoiceItems.Add(item);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Edit), new { id = invoiceNumber });
-            }
-
-            return View(item);
-        }
-
-        // Add Action for deleting Invoice Items
-        [HttpPost, ActionName("DeleteItem")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteItem(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.InvoiceItems.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            _context.InvoiceItems.Remove(item);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

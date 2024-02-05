@@ -12,7 +12,7 @@ using sampleinvoice.Data;
 namespace sampleinvoice.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240131082621_initial")]
+    [Migration("20240201023040_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -71,7 +71,7 @@ namespace sampleinvoice.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceItemId"));
 
-                    b.Property<int?>("InvoiceNumber")
+                    b.Property<int>("InvoiceNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("Product")
@@ -86,21 +86,7 @@ namespace sampleinvoice.Migrations
 
                     b.HasKey("InvoiceItemId");
 
-                    b.HasIndex("InvoiceNumber");
-
                     b.ToTable("InvoiceItems");
-                });
-
-            modelBuilder.Entity("sampleinvoice.Models.InvoiceItem", b =>
-                {
-                    b.HasOne("sampleinvoice.Models.Invoice", null)
-                        .WithMany("InvoiceItems")
-                        .HasForeignKey("InvoiceNumber");
-                });
-
-            modelBuilder.Entity("sampleinvoice.Models.Invoice", b =>
-                {
-                    b.Navigation("InvoiceItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sampleinvoice.Models
 {
@@ -18,9 +19,10 @@ namespace sampleinvoice.Models
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0.")]
         public int Quantity { get; set; }
 
-        // Foreign key
+        [ForeignKey("Invoice")]
         public int InvoiceNumber { get; set; }
 
+        // Navigation property for the related invoice
         public Invoice Invoice { get; set; }
     }
 }

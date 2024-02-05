@@ -1,16 +1,17 @@
 ﻿@model sampleinvoice.Models.Invoice
+
 @{
     ViewData["Title"] = "Edit";
 }
 
 <h1>Edit Invoice</h1>
 
-<form asp-action="Create" method="post" class="row g-3">
+<form asp-action="Edit" method="post" class="row g-3">
     <div class="row g-3">
         <div class="col-md-3">
             <div class="form-group">
                 <label asp-for="Date" class="control-label">Invoice Date</label>
-                <input asp-for="Date" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input asp-for="Date" class="form-control" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
         </div>
@@ -35,12 +36,12 @@
             </div>
         </div>
 
-          <div class="col-md-3">
-        <div class="form-group">
-        <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
-        <input asp-for="InvoiceNumber" class="form-control" readonly />
-        <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
-        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
+                <input asp-for="InvoiceNumber" class="form-control" readonly />
+                <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+            </div>
         </div>
 
         <!-- Button to add products -->
@@ -58,7 +59,25 @@
                 </tr>
             </thead>
             <tbody id="productTableBody">
-                <!-- Product rows will be dynamically added here -->
+                @if (Model.InvoiceItems != null)
+                {
+                    foreach (var item in Model.InvoiceItems)
+                    {
+                        <tr>
+                            <td>@item.Product</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UnitPrice</td>
+                            <td>@(item.Quantity * item.UnitPrice)</td>
+                            <td><button type="button" class="btn btn-danger btn-sm deleteProduct">Delete</button></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">No items available</td>
+                    </tr>
+                }
             </tbody>
             <tfoot>
                 <tr>
@@ -98,21 +117,11 @@
             </div>
         </div>
 
-
-
-        <!-- VAT Percentage -->
         <div class="col-md-3">
             <div class="form-group">
                 <label for="vatPercentage">VAT Percentage</label>
-                <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" />
-            </div>
-        </div>
-
-        <!-- VAT Amount -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label>VAT Amount</label>
-                <input id="vatAmount" class="form-control" readonly />
+                <!-- Populate the VAT percentage value from the model -->
+                <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" value="@Model.VatPercentage"/>
             </div>
         </div>
 
@@ -124,9 +133,18 @@
             </div>
         </div>
 
+        <!-- VAT Amount -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label>VAT Amount</label>
+                <input id="vatAmount" class="form-control" readonly />
+            </div>
+        </div>
+
         <div class="col-md-12">
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
+    </div>
 </form>
 
 <!-- Modal for adding product details -->
@@ -158,10 +176,29 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
         // JavaScript code for handling dynamic addition of products and calculations
         $(document).ready(function () {
+            // Function to calculate total amount
+            function calculateTotal() {
+                var totalAmount = 0;
+                $("#productTableBody tr").each(function () {
+                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
+                });
+                // Update total amount in the footer
+                $("#totalAmount").text(totalAmount.toFixed(2));
+
+                // Calculate VAT amount
+                var vatPercentage = parseFloat($("#vatPercentage").val());
+                var vatAmount = (vatPercentage / 100) * totalAmount;
+                // Update VAT amount
+                $("#vatAmount").val(vatAmount.toFixed(2));
+            }
+
+            // Call calculateTotal initially
+            calculateTotal();
             // Add product button click event
             $("#addProductButton").click(function () {
                 $("#addProductModal").modal("show");

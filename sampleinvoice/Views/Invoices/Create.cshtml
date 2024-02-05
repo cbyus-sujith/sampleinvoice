@@ -35,14 +35,6 @@
             </div>
         </div>
 
-      @*   <div class="col-md-3">
-            <div class="form-group">
-                <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
-                <input asp-for="InvoiceNumber" class="form-control" readonly />
-                <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
-            </div>
-        </div> *@
-
         <!-- Button to add products -->
         <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
 
@@ -108,19 +100,19 @@
             </div>
         </div>
 
-        <!-- VAT Amount -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label>VAT Amount</label>
-                <input id="vatAmount" class="form-control" readonly />
-            </div>
-        </div>
-
         <div class="col-md-3">
             <div class="form-group">
                 <label asp-for="FreightCharge" class="control-label">Freight Charge</label>
                 <input asp-for="FreightCharge" class="form-control" />
                 <span asp-validation-for="FreightCharge" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- VAT Amount -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label>VAT Amount</label>
+                <input id="vatAmount" class="form-control" readonly />
             </div>
         </div>
 
