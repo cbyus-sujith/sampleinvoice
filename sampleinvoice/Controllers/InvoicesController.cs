@@ -42,6 +42,11 @@ namespace sampleinvoice.Controllers
         {
             try
             {
+                if (_context.Invoices.Any(i => i.InvoiceNumber == invoice.InvoiceNumber))
+                {
+                    ModelState.AddModelError("InvoiceNumber", "Invoice number already exists.");
+                    return View(invoice);
+                }
                 var items = JsonConvert.DeserializeObject<List<InvoiceItem>>(invoiceItems);
 
                 _context.Add(invoice);

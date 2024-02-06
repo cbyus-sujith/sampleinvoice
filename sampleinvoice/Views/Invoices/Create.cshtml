@@ -172,16 +172,6 @@
                 $("#addProductModal").modal("hide");
             });
 
-            // Close modal button click event
-            $("#closeModalButton").click(function () {
-                $("#addProductModal").modal("hide"); // Close the modal when close button is clicked
-            });
-
-            // Edit product button click event
-            $(document).on("click", ".editProduct", function () {
-                editProduct($(this));
-            });
-
             // Delete product button click event
             $(document).on("click", ".deleteProduct", function () {
                 deleteProduct($(this));
@@ -207,7 +197,6 @@
                 "<td>" + productUnitCost + "</td>" +
                 "<td>" + subtotal.toFixed(2) + "</td>" +
                 "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
-                "<td><button type='button' class='btn btn-danger btn-sm editProduct'>Edit</button></td>" +
                 "</tr>"
             );
 
