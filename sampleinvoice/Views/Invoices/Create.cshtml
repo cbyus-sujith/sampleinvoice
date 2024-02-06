@@ -35,6 +35,14 @@
             </div>
         </div>
 
+        <div class="col-md-3">
+            <div class="form-group">
+                <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
+                <input asp-for="InvoiceNumber" class="form-control" />
+                <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+            </div>
+        </div>
+
         <!-- Button to add products -->
         <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
 
@@ -90,8 +98,6 @@
             </div>
         </div>
 
-
-
         <!-- VAT Percentage -->
         <div class="col-md-3">
             <div class="form-group">
@@ -119,6 +125,7 @@
         <div class="col-md-12">
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
+    </div>
 </form>
 
 <!-- Modal for adding product details -->
@@ -150,9 +157,9 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
-        // JavaScript code for handling dynamic addition of products and calculations
         $(document).ready(function () {
             // Add product button click event
             $("#addProductButton").click(function () {
@@ -161,81 +168,78 @@
 
             // Add product modal button click event
             $("#addProduct").click(function () {
-                var productName = $("#productName").val();
-                var productQuantity = $("#productQuantity").val();
-                var productUnitCost = $("#productUnitCost").val();
-                var subtotal = productQuantity * productUnitCost;
-
-                // Append new row to the product table
-                $("#productTableBody").append(
-                    "<tr>" +
-                    "<td>" + productName + "</td>" +
-                    "<td>" + productQuantity + "</td>" +
-                    "<td>" + productUnitCost + "</td>" +
-                    "<td>" + subtotal.toFixed(2) + "</td>" +
-                    "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
-                    "</tr>"
-                );
-
-                // Calculate total amount
-                var totalAmount = 0;
-                $("#productTableBody tr").each(function () {
-                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
-                });
-
-                // Update total amount in the footer
-                $("#totalAmount").text(totalAmount.toFixed(2));
-
-                // Calculate VAT amount
-                var vatPercentage = parseFloat($("#vatPercentage").val());
-                var vatAmount = (vatPercentage / 100) * totalAmount;
-
-                // Update VAT amount
-                $("#vatAmount").val(vatAmount.toFixed(2));
-
-                // Clear modal inputs
-                $("#productName").val("");
-                $("#productQuantity").val("");
-                $("#productUnitCost").val("");
-
-                // Close modal
+                addProduct();
                 $("#addProductModal").modal("hide");
+            });
+
+            // Close modal button click event
+            $("#closeModalButton").click(function () {
+                $("#addProductModal").modal("hide"); // Close the modal when close button is clicked
+            });
+
+            // Edit product button click event
+            $(document).on("click", ".editProduct", function () {
+                editProduct($(this));
             });
 
             // Delete product button click event
             $(document).on("click", ".deleteProduct", function () {
-                $(this).closest("tr").remove();
-
-                // Recalculate total amount
-                var totalAmount = 0;
-                $("#productTableBody tr").each(function () {
-                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
-                });
-
-                // Update total amount in the footer
-                $("#totalAmount").text(totalAmount.toFixed(2));
-
-                // Recalculate VAT amount
-                var vatPercentage = parseFloat($("#vatPercentage").val());
-                var vatAmount = (vatPercentage / 100) * totalAmount;
-
-                // Update VAT amount
-                $("#vatAmount").val(vatAmount.toFixed(2));
+                deleteProduct($(this));
             });
 
             // Calculate VAT amount on VAT percentage change
             $("#vatPercentage").on("input", function () {
-                var vatPercentage = parseFloat($(this).val());
-                var totalAmount = parseFloat($("#totalAmount").text());
-                var vatAmount = (vatPercentage / 100) * totalAmount;
-
-                $("#vatAmount").val(vatAmount.toFixed(2));
+                calculateVatAmount();
             });
         });
 
+        function addProduct() {
+            var productName = $("#productName").val();
+            var productQuantity = $("#productQuantity").val();
+            var productUnitCost = $("#productUnitCost").val();
+            var subtotal = productQuantity * productUnitCost;
+
+            // Append new row to the product table
+            $("#productTableBody").append(
+                "<tr>" +
+                "<td>" + productName + "</td>" +
+                "<td>" + productQuantity + "</td>" +
+                "<td>" + productUnitCost + "</td>" +
+                "<td>" + subtotal.toFixed(2) + "</td>" +
+                "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
+                "<td><button type='button' class='btn btn-danger btn-sm editProduct'>Edit</button></td>" +
+                "</tr>"
+            );
+
+            updateInvoice();
+        }
+
+        function deleteProduct(element) {
+            element.closest("tr").remove();
+            updateInvoice();
+        }
+
+        function updateInvoice() {
+            var totalAmount = 0;
+            $("#productTableBody tr").each(function () {
+                totalAmount += parseFloat($(this).find("td:eq(3)").text());
+            });
+
+            $("#totalAmount").text(totalAmount.toFixed(2));
+
+            calculateVatAmount();
+        }
+
+        function calculateVatAmount() {
+            var vatPercentage = parseFloat($("#vatPercentage").val());
+            var totalAmount = parseFloat($("#totalAmount").text());
+            var vatAmount = (vatPercentage / 100) * totalAmount;
+
+            $("#vatAmount").val(vatAmount.toFixed(2));
+        }
+
         // Function to prepare invoice items
         function prepareInvoiceItems() {
-            // Prepare invoice items as JSON and set it in the hidden field
             var invoiceItems = [];
 
             $("#productTableBody tr").each(function () {
@@ -252,7 +256,6 @@
                 invoiceItems.push(item);
             });
 
-            // Set the serialized JSON in the hidden input field
             $("#invoiceItems").val(JSON.stringify(invoiceItems));
         }
 
@@ -260,5 +263,6 @@
         $("form").submit(function () {
             prepareInvoiceItems();
         });
+
     </script>
 }

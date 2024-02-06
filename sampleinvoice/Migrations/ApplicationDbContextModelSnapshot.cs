@@ -24,11 +24,11 @@ namespace sampleinvoice.Migrations
 
             modelBuilder.Entity("sampleinvoice.Models.Invoice", b =>
                 {
-                    b.Property<int>("InvoiceNumber")
+                    b.Property<int>("InvoiceId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceNumber"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -48,6 +48,13 @@ namespace sampleinvoice.Migrations
                     b.Property<decimal>("FreightCharge")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -55,7 +62,7 @@ namespace sampleinvoice.Migrations
                     b.Property<decimal>("VatPercentage")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("InvoiceNumber");
+                    b.HasKey("InvoiceId");
 
                     b.ToTable("Invoices");
                 });
@@ -68,7 +75,7 @@ namespace sampleinvoice.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceItemId"));
 
-                    b.Property<int>("InvoiceNumber")
+                    b.Property<int>("InvoiceId")
                         .HasColumnType("int");
 
                     b.Property<string>("Product")
@@ -83,7 +90,25 @@ namespace sampleinvoice.Migrations
 
                     b.HasKey("InvoiceItemId");
 
+                    b.HasIndex("InvoiceId");
+
                     b.ToTable("InvoiceItems");
+                });
+
+            modelBuilder.Entity("sampleinvoice.Models.InvoiceItem", b =>
+                {
+                    b.HasOne("sampleinvoice.Models.Invoice", "Invoice")
+                        .WithMany("InvoiceItems")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("sampleinvoice.Models.Invoice", b =>
+                {
+                    b.Navigation("InvoiceItems");
                 });
 #pragma warning restore 612, 618
         }

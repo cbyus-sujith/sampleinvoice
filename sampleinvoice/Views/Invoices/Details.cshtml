@@ -11,7 +11,7 @@
         <div class="col-md-3">
             <div class="form-group">
                 <label asp-for="Date" class="control-label">Invoice Date</label>
-                <input asp-for="Date" class="form-control" type="date" value="@Model.Date.ToShortDateString()" readonly />
+            <input asp-for="Date" class="form-control" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" readonly />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
         </div>

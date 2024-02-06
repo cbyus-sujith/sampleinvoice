@@ -5,7 +5,10 @@ namespace sampleinvoice.Models
     public class Invoice
     {
         [Key]
-        public int InvoiceNumber { get; set; }
+        public int InvoiceId { get; set; }
+
+        [Required(ErrorMessage = "Invoice number is required.")]
+        public string InvoiceNumber { get; set; }
 
         [Required(ErrorMessage = "Customer name is required.")]
         public string Customer { get; set; }
@@ -33,5 +36,8 @@ namespace sampleinvoice.Models
 
         // Navigation property to link products with this invoice
         public List<InvoiceItem> InvoiceItems { get; set; }
+
+        // Delete flag
+        public bool IsDeleted { get; set; } = false;
     }
 }
