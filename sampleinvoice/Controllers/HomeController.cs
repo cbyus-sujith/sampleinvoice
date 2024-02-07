@@ -18,6 +18,26 @@ namespace sampleinvoice.Controllers
             return View();
         }
 
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        public IActionResult Edi()
+        {
+            return View();
+        }
+
+        public IActionResult Details()
+        {
+            return View();
+        }
+
+        public IActionResult Delete()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

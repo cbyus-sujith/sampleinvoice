@@ -1,8 +1,140 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<h2>Invoices</h2>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<p>
+    <a asp-action="Create" asp-controller="Home">Create New</a>
+</p>
+<form id="searchForm">
+    <div class="form-group">
+        <input type="text" id="searchString" placeholder="Search...">
+        <input type="submit" value="Search" class="btn btn-primary" />
+        <button type="button" id="clearSearch" class="btn btn-secondary" style="display: none;">Clear Search</button>
+    </div>
+</form>
+<div id="searchResult" style="display: none;"></div>
+<table id="invoicesTable" class="table">
+    <thead>
+        <tr>
+            <th>Invoice Number</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Customer PO</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Table rows will be dynamically populated by JavaScript -->
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        // Load all invoices on page load
+        loadAllInvoices();
+
+        // Search functionality
+        $('#searchForm').submit(function (e) {
+            e.preventDefault();
+            searchInvoices();
+        });
+
+        // Clear search functionality
+        $('#clearSearch').click(function () {
+            $('#searchString').val(''); // Clear the search input field
+            loadAllInvoices(); // Load all invoices
+            $('#searchResult').hide(); // Hide search result text
+            $(this).hide(); // Hide clear search button
+        });
+
+        // Delete invoice functionality
+        $(document).on('click', '.deleteInvoice', function () {
+            var invoiceId = $(this).data('id');
+            var row = $(this).closest('tr');
+            var invoiceNumber = row.find('td:nth-child(1)').text();
+            var customer = row.find('td:nth-child(2)').text();
+            var date = row.find('td:nth-child(3)').text();
+            var customerPO = row.find('td:nth-child(4)').text();
+
+            var confirmationMessage = 'Are you sure you want to delete the following invoice?\n\n' +
+                'Invoice Number: ' + invoiceNumber + '\n' +
+                'Customer: ' + customer + '\n' +
+                'Date: ' + date + '\n' +
+                'Customer PO: ' + customerPO + '\n\n' +
+                'This action cannot be undone.';
+
+            if (confirm(confirmationMessage)) {
+                deleteInvoice(invoiceId);
+            }
+        });
+
+        function loadAllInvoices() {
+            $.ajax({
+                url: '/api/InvoicesApi/All',
+                type: 'GET',
+                success: function (data) {
+                    displayInvoices(data);
+                    $('#searchResult').hide(); // Hide search result text
+                    $('#clearSearch').hide(); // Hide clear search button
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log('Error:', errorThrown);
+                }
+            });
+        }
+
+        function searchInvoices() {
+            var searchString = $('#searchString').val();
+            // Load invoices with search string
+            $.ajax({
+                url: '/api/InvoicesApi/Search',
+                type: 'GET',
+                data: { searchString: searchString },
+                success: function (data) {
+                    displayInvoices(data);
+                    $('#searchResult').text('Search results for: ' + searchString).show(); // Show search result text
+                    $('#clearSearch').show(); // Show clear search button
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log('Error:', errorThrown);
+                }
+            });
+        }
+
+        function displayInvoices(data) {
+            $('#invoicesTable tbody').empty();
+            if (data.length === 0) {
+                $('#invoicesTable tbody').append('<tr><td colspan="5">No invoices found.</td></tr>');
+            } else {
+                $.each(data, function (index, invoice) {
+                    var row = '<tr>' +
+                        '<td>' + invoice.invoiceNumber + '</td>' +
+                        '<td>' + invoice.customer + '</td>' +
+                        '<td>' + new Date(invoice.date).toISOString().split('T')[0] + '</td>' +
+                        '<td>' + invoice.customerPO + '</td>' +
+                        '<td>' +
+                        '<a href="/Home/Edit/' + invoice.invoiceId + '">Edit</a> | ' +
+                        '<a href="/Home/Details/' + invoice.invoiceId + '">Details</a> | ' +
+                        '<a href="#" class="deleteInvoice" data-id="' + invoice.invoiceId + '">Delete</a>' +
+                        '</td>' +
+                        '</tr>';
+                    $('#invoicesTable tbody').append(row);
+                });
+            }
+        }
+
+        function deleteInvoice(invoiceId) {
+            $.ajax({
+                url: '/api/InvoicesApi/' + invoiceId,
+                type: 'DELETE',
+                success: function () {
+                    // Reload invoices after successful deletion
+                    loadAllInvoices();
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log('Error:', errorThrown);
+                    alert('Error deleting invoice. Please try again.');
+                }
+            });
+        }
+    });
+
+</script>

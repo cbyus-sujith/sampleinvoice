@@ -1,50 +1,52 @@
 ﻿@model sampleinvoice.Models.Invoice
+@{
+    ViewData["Title"] = "Details";
+}
 
-<h1>Invoice Details</h1>
-
+<h1>Details</h1>
 
 <div>
     <a asp-action="Edit" asp-route-id="@Model.InvoiceId">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
-    <div class="row g-3">
-        <div class="col-md-3">
-            <div class="form-group">
-                <label asp-for="Date" class="control-label">Invoice Date</label>
+<div class="row g-3">
+    <div class="col-md-3">
+        <div class="form-group">
+            <label asp-for="Date" class="control-label">Invoice Date</label>
             <input asp-for="Date" class="form-control" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" readonly />
-                <span asp-validation-for="Date" class="text-danger"></span>
-            </div>
+            <span asp-validation-for="Date" class="text-danger"></span>
         </div>
+    </div>
 
-        <div class="col-md-6">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="Customer" class="control-label">Customer Name</label>
-                        <input asp-for="Customer" class="form-control" readonly />
-                        <span asp-validation-for="Customer" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="CustomerPO" class="control-label">Customer PO</label>
-                        <input asp-for="CustomerPO" class="form-control" readonly />
-                        <span asp-validation-for="CustomerPO" class="text-danger"></span>
-                    </div>
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="Customer" class="control-label">Customer Name</label>
+                    <input asp-for="Customer" class="form-control" readonly />
+                    <span asp-validation-for="Customer" class="text-danger"></span>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-3">
-            <div class="form-group">
-                <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
-                <input asp-for="InvoiceNumber" class="form-control" readonly />
-                <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="CustomerPO" class="control-label">Customer PO</label>
+                    <input asp-for="CustomerPO" class="form-control" readonly />
+                    <span asp-validation-for="CustomerPO" class="text-danger"></span>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="form-group">
+            <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
+            <input asp-for="InvoiceNumber" class="form-control" readonly />
+            <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
+        </div>
+    </div>
     <!-- Product table -->
-    <table id="productTable" class="table" readonly>
+    <table id="productTable" class="table">
         <thead>
             <tr>
                 <th>Product Name</th>
@@ -80,7 +82,7 @@
         <!-- Currency Selection -->
         <div class="form-group">
             <label asp-for="Currency" class="control-label">Currency</label>
-            <select asp-for="Currency" class="form-control" readonly>
+            <select asp-for="Currency" class="form-control" disabled>
                 <option value="INR" selected>INR</option>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
@@ -93,7 +95,7 @@
         <!-- Payment Method Selection -->
         <div class="form-group">
             <label asp-for="PaymentMethod" class="control-label">Payment Method</label>
-            <select asp-for="PaymentMethod" class="form-control" readonly>
+            <select asp-for="PaymentMethod" class="form-control" disabled>
                 <option value="Cash" selected>Cash</option>
                 <option value="CreditCard">Credit Card</option>
                 <option value="PayPal">PayPal</option>
@@ -114,7 +116,7 @@
     <!-- VAT Amount -->
     <div class="col-md-3">
         <div class="form-group">
-            <label>VAT Amount</label>
+            <label for="vatAmount">VAT Amount</label>
             <input id="vatAmount" class="form-control" readonly />
         </div>
     </div>
@@ -126,27 +128,40 @@
             <span asp-validation-for="FreightCharge" class="text-danger"></span>
         </div>
     </div>
-    @section Scripts {
+</div>
+@section Scripts {
     <script>
         $(document).ready(function () {
-            // Function to calculate total amount
-            function calculateTotal() {
-                var totalAmount = 0;
-                $("#productTableBody tr").each(function () {
-                    totalAmount += parseFloat($(this).find("td:eq(3)").text());
-                });
-                // Update total amount in the footer
-                $("#totalAmount").text(totalAmount.toFixed(2));
+            // Ajax call to fetch invoice details
+            $.ajax({
+                url: '/api/InvoicesApi/@Model.InvoiceId',
+                type: 'GET',
+                success: function (data) {
+                    // Populate data dynamically
+                    $('#vatAmount').val(data.vatAmount); // Populate VAT Amount
+                    $('#totalAmount').text(data.totalAmount.toFixed(2)); // Populate Total Amount
 
-                // Calculate VAT amount
-                var vatPercentage = parseFloat($("#vatPercentage").val());
-                var vatAmount = (vatPercentage / 100) * totalAmount;
-                // Update VAT amount
-                $("#vatAmount").val(vatAmount.toFixed(2));
-            }
+                    // Populate VAT Percentage
+                    $('#vatPercentage').val(data.vatPercentage);
 
-            // Call calculateTotal initially
-            calculateTotal();
+                    // Clear existing rows in the product table
+                    $('#productTableBody').empty();
+
+                    // Populate product table with new data
+                    $.each(data.invoiceItems, function (index, item) {
+                        var row = '<tr>' +
+                            '<td>' + item.product + '</td>' +
+                            '<td>' + item.quantity + '</td>' +
+                            '<td>' + item.unitPrice + '</td>' +
+                            '<td>' + (item.quantity * item.unitPrice).toFixed(2) + '</td>' +
+                            '</tr>';
+                        $('#productTableBody').append(row);
+                    });
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
         });
     </script>
-    }
+}
