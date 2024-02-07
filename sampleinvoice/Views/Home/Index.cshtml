@@ -108,7 +108,7 @@
                     var row = '<tr>' +
                         '<td>' + invoice.invoiceNumber + '</td>' +
                         '<td>' + invoice.customer + '</td>' +
-                        '<td>' + new Date(invoice.date).toISOString().split('T')[0] + '</td>' +
+                        '<td>' + new Date(invoice.date).toLocaleDateString() + '</td>' +
                         '<td>' + invoice.customerPO + '</td>' +
                         '<td>' +
                         '<a href="/Home/Edit/' + invoice.invoiceId + '">Edit</a> | ' +

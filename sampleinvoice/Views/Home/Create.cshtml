@@ -47,7 +47,9 @@
         </div>
 
         <!-- Button to add products -->
-        <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
+        <div class="col-md-12">
+            <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
+        </div>
 
         <!-- Product table -->
         <table id="productTable" class="table">
@@ -162,6 +164,7 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
         $(document).ready(function () {
@@ -184,6 +187,13 @@
             // Calculate VAT amount on VAT percentage change
             $("#vatPercentage").on("input", function () {
                 calculateVatAmount();
+            });
+
+            // Form submission
+            $("#invoiceForm").submit(function (event) {
+                event.preventDefault();
+                prepareInvoiceItems(); // Changed to prepareInvoiceItems
+                submitInvoice();
             });
         });
 
@@ -251,11 +261,22 @@
 
             $("#invoiceItems").val(JSON.stringify(invoiceItems));
         }
-
-        // Attach the prepareInvoiceItems function to form submission
-        $("form").submit(function () {
-            prepareInvoiceItems();
-        });
+        function submitInvoice() {
+            var formData = $("#invoiceForm").serialize();
+            $.ajax({
+                url: '@Url.Action("CreateInvoice", "InvoiceApi")',
+                type: 'POST',
+                data: formData,
+                success: function (data) {
+                    // Handle success
+                    console.log("Invoice created successfully");
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error("Error creating invoice:", error);
+                }
+            });
+        }
 
     </script>
 }
