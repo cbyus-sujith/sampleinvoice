@@ -175,34 +175,54 @@
         </div>
     </div>
 </div>
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Submit form data via AJAX
-            $('#editForm').submit(function (event) {
-                event.preventDefault();
-                var formData = $(this).serialize();
-                $.ajax({
-                    url: '@Url.Action("UpdateInvoice", "InvoicesApi", new { id = Model.InvoiceId })',
-                    type: 'PUT',
-                    data: formData,
-                    success: function (response) {
-                        // Handle success, maybe redirect or show a success message
-                    },
-                    error: function (error) {
-                        console.log(error);
-                    }
-                });
-            });
+<script>
+    $(document).ready(function () {
+        var invoiceId = @Html.Raw(Json.Serialize(ViewData["InvoiceId"]));
 
-            // AJAX call to add product details
-            $('#addProduct').click(function () {
-                var productName = $('#productName').val();
-                var productQuantity = $('#productQuantity').val();
-                var productUnitCost = $('#productUnitCost').val();
-                // Perform validation if needed
-                // Make AJAX call to add product
-            });
+        $.ajax({
+            url: '/api/InvoicesApi/' + invoiceId,
+            type: 'GET',
+            success: function (data) {
+                $('#invoiceDate').val(data.date.substring(0, 10));
+                $('#customerName').val(data.customer);
+                $('#customerPO').val(data.customerPO);
+                $('#invoiceNumber').val(data.invoiceNumber);
+                $('#currency').val(data.currency);
+                $('#paymentMethod').val(data.paymentMethod);
+                $('#vatPercentage').val(data.vatPercentage);
+                $('#freightCharge').val(data.freightCharge);
+
+                // Populate product table and calculate total amount
+                var productsHtml = '';
+                var totalSubtotal = 0;
+
+                if (data.invoiceItems && data.invoiceItems.length > 0) {
+                    data.invoiceItems.forEach(function (item) {
+                        var subtotal = item.quantity * item.unitPrice;
+                        totalSubtotal += subtotal;
+                        productsHtml += '<tr>' +
+                            '<td>' + item.product + '</td>' +
+                            '<td>' + item.quantity + '</td>' +
+                            '<td>' + item.unitPrice + '</td>' +
+                            '<td>' + subtotal.toFixed(2) + '</td>' +
+                            '</tr>';
+                    });
+                }
+
+                $('#productTableBody').html(productsHtml);
+
+                // Calculate total amount
+                var freightCharge = parseFloat(data.freightCharge) || 0;
+                var vatPercentage = parseFloat(data.vatPercentage) || 0;
+                var vatAmount = (totalSubtotal * vatPercentage) / 100;
+                var totalAmount = totalSubtotal;
+                $('#totalAmount').text(totalAmount.toFixed(2));
+                // Display VAT amount
+                $('#vatAmount').val(vatAmount.toFixed(2));
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log('Error:', textStatus, errorThrown);
+            }
         });
-    </script>
-}
+    });
+</script>

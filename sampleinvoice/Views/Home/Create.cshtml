@@ -123,7 +123,7 @@
         <!-- VAT Amount -->
         <div class="col-md-3">
             <div class="form-group">
-                <label>VAT Amount</label>
+                <label for="vatAmount">VAT Amount</label>
                 <input id="vatAmount" class="form-control" readonly />
             </div>
         </div>
@@ -164,84 +164,46 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Add product button click event
-            $("#addProductButton").click(function () {
-                $("#addProductModal").modal("show");
-            });
-
-            // Add product modal button click event
-            $("#addProduct").click(function () {
-                addProduct();
-                $("#addProductModal").modal("hide");
-            });
-
-            // Delete product button click event
-            $(document).on("click", ".deleteProduct", function () {
-                deleteProduct($(this));
-            });
-
-            // Calculate VAT amount on VAT percentage change
-            $("#vatPercentage").on("input", function () {
-                calculateVatAmount();
-            });
-
-            // Form submission
-            $("#invoiceForm").submit(function (event) {
-                event.preventDefault();
-                prepareInvoiceItems(); // Changed to prepareInvoiceItems
-                submitInvoice();
+            $("#submitInvoiceButton").click(function () {
+                createInvoice();
             });
         });
 
-        function addProduct() {
-            var productName = $("#productName").val();
-            var productQuantity = $("#productQuantity").val();
-            var productUnitCost = $("#productUnitCost").val();
-            var subtotal = productQuantity * productUnitCost;
+        function createInvoice() {
+            var formData = {
+                InvoiceNumber: $("#InvoiceNumber").val(),
+                Customer: $("#Customer").val(),
+                Date: $("#Date").val(),
+                CustomerPO: $("#CustomerPO").val(),
+                Currency: $("#Currency").val(),
+                PaymentMethod: $("#PaymentMethod").val(),
+                VatPercentage: $("#vatPercentage").val(),
+                FreightCharge: $("#FreightCharge").val(),
+                InvoiceItems: prepareInvoiceItems()
+            };
 
-            // Append new row to the product table
-            $("#productTableBody").append(
-                "<tr>" +
-                "<td>" + productName + "</td>" +
-                "<td>" + productQuantity + "</td>" +
-                "<td>" + productUnitCost + "</td>" +
-                "<td>" + subtotal.toFixed(2) + "</td>" +
-                "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
-                "</tr>"
-            );
-
-            updateInvoice();
-        }
-
-        function deleteProduct(element) {
-            element.closest("tr").remove();
-            updateInvoice();
-        }
-
-        function updateInvoice() {
-            var totalAmount = 0;
-            $("#productTableBody tr").each(function () {
-                totalAmount += parseFloat($(this).find("td:eq(3)").text());
+            $.ajax({
+                type: "POST",
+                url: "/api/InvoicesApi/Create",
+                data: JSON.stringify(formData),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    // Handle success response
+                    console.log("Invoice created successfully: ", response);
+                    // Redirect or perform other actions as needed
+                },
+                error: function (xhr, status, error) {
+                    // Handle error response
+                    console.error("Error creating invoice: ", xhr.responseText);
+                    // Display error message to the user
+                }
             });
-
-            $("#totalAmount").text(totalAmount.toFixed(2));
-
-            calculateVatAmount();
         }
 
-        function calculateVatAmount() {
-            var vatPercentage = parseFloat($("#vatPercentage").val());
-            var totalAmount = parseFloat($("#totalAmount").text());
-            var vatAmount = (vatPercentage / 100) * totalAmount;
-
-            $("#vatAmount").val(vatAmount.toFixed(2));
-        }
-
-        // Function to prepare invoice items
         function prepareInvoiceItems() {
             var invoiceItems = [];
 
@@ -259,24 +221,7 @@
                 invoiceItems.push(item);
             });
 
-            $("#invoiceItems").val(JSON.stringify(invoiceItems));
+            return invoiceItems;
         }
-        function submitInvoice() {
-            var formData = $("#invoiceForm").serialize();
-            $.ajax({
-                url: '@Url.Action("CreateInvoice", "InvoiceApi")',
-                type: 'POST',
-                data: formData,
-                success: function (data) {
-                    // Handle success
-                    console.log("Invoice created successfully");
-                },
-                error: function (xhr, status, error) {
-                    // Handle error
-                    console.error("Error creating invoice:", error);
-                }
-            });
-        }
-
     </script>
 }

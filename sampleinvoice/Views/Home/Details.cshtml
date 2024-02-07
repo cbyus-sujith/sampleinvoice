@@ -40,32 +40,32 @@
             <span id="invoiceNumberValidation" class="text-danger"></span>
         </div>
     </div>
+
     <!-- Product table -->
-    <table id="productTable" class="table">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Unit Cost</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody id="productTableBody">
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3"></td>
-                <td><label for="totalAmount">Total:</label></td>
-                <td id="totalAmount">0.00</td>
-            </tr>
-        </tfoot>
-    </table>
+    <div class="col-md-12">
+        <table id="productTable" class="table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Unit Cost</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td><label for="totalAmount">Total:</label></td>
+                    <td id="totalAmount">0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 
-    <!-- Invoice Items (hidden) -->
-    <input type="hidden" id="invoiceItems" name="invoiceItems" readonly />
-
+    <!-- Currency Selection -->
     <div class="col-md-3">
-        <!-- Currency Selection -->
         <div class="form-group">
             <label for="currency" class="control-label">Currency</label>
             <select id="currency" class="form-control" disabled>
@@ -77,8 +77,8 @@
         </div>
     </div>
 
+    <!-- Payment Method Selection -->
     <div class="col-md-3">
-        <!-- Payment Method Selection -->
         <div class="form-group">
             <label for="paymentMethod" class="control-label">Payment Method</label>
             <select id="paymentMethod" class="form-control" disabled>
@@ -114,51 +114,55 @@
         </div>
     </div>
 </div>
-</div>
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            var invoiceId = @Html.Raw(Json.Serialize(ViewData["InvoiceId"]));
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var invoiceId = @Html.Raw(Json.Serialize(ViewData["InvoiceId"]));
 
-            $.ajax({
-                url: '/api/InvoicesApi/' + invoiceId,
-                type: 'GET',
-                success: function (data) {
-                    $('#invoiceDate').val(data.date.substring(0, 10));
-                    $('#customerName').val(data.customer);
-                    $('#customerPO').val(data.customerPO);
-                    $('#invoiceNumber').val(data.invoiceNumber);
-                    $('#currency').val(data.currency);
-                    $('#paymentMethod').val(data.paymentMethod);
-                    $('#vatPercentage').val(data.vatPercentage);
-                    $('#vatAmount').val(data.vatAmount);
-                    $('#freightCharge').val(data.freightCharge);
+        $.ajax({
+            url: '/api/InvoicesApi/' + invoiceId,
+            type: 'GET',
+            success: function (data) {
+                $('#invoiceDate').val(data.date.substring(0, 10));
+                $('#customerName').val(data.customer);
+                $('#customerPO').val(data.customerPO);
+                $('#invoiceNumber').val(data.invoiceNumber);
+                $('#currency').val(data.currency);
+                $('#paymentMethod').val(data.paymentMethod);
+                $('#vatPercentage').val(data.vatPercentage);
+                $('#freightCharge').val(data.freightCharge);
 
-                    // Populate product table
-                    var productsHtml = '';
-                    var totalSubtotal = 0;
-                    data.products.forEach(function (product) {
+                // Populate product table and calculate total amount
+                var productsHtml = '';
+                var totalSubtotal = 0;
+
+                if (data.invoiceItems && data.invoiceItems.length > 0) {
+                    data.invoiceItems.forEach(function (item) {
+                        var subtotal = item.quantity * item.unitPrice;
+                        totalSubtotal += subtotal;
                         productsHtml += '<tr>' +
-                            '<td>' + product.productName + '</td>' +
-                            '<td>' + product.quantity + '</td>' +
-                            '<td>' + product.unitCost + '</td>' +
-                            '<td>' + product.subtotal + '</td>' +
+                            '<td>' + item.product + '</td>' +
+                            '<td>' + item.quantity + '</td>' +
+                            '<td>' + item.unitPrice + '</td>' +
+                            '<td>' + subtotal.toFixed(2) + '</td>' +
                             '</tr>';
-                        totalSubtotal += parseFloat(product.subtotal);
                     });
-                    $('#productTableBody').html(productsHtml);
-
-                    // Calculate total amount
-                    var freightCharge = parseFloat(data.freightCharge);
-                    var vatAmount = parseFloat(data.vatAmount);
-                    var totalAmount = totalSubtotal + freightCharge + vatAmount;
-                    $('#totalAmount').text(totalAmount.toFixed(2));
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.log('Error:', textStatus, errorThrown);
                 }
-            });
-        });
-    </script>
-}
 
+                $('#productTableBody').html(productsHtml);
+
+                // Calculate total amount
+                var freightCharge = parseFloat(data.freightCharge) || 0;
+                var vatPercentage = parseFloat(data.vatPercentage) || 0;
+                var vatAmount = (totalSubtotal * vatPercentage) / 100;
+                var totalAmount = totalSubtotal;
+                $('#totalAmount').text(totalAmount.toFixed(2));
+                // Display VAT amount
+                $('#vatAmount').val(vatAmount.toFixed(2));
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log('Error:', textStatus, errorThrown);
+            }
+        });
+    });
+</script>

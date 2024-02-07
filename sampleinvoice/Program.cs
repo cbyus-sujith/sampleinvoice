@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using sampleinvoice.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+});
 
 // Add Entity Framework Core DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

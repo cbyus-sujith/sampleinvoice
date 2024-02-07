@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using sampleinvoice.Data;
 using sampleinvoice.Models;
 
@@ -32,7 +31,6 @@ namespace sampleinvoice.Controllers
             }
         }
 
-        // GET: api/Invoices(search)
         [HttpGet("Search")]
         public async Task<ActionResult<IEnumerable<Invoice>>> GetSearchInvoices(string searchString)
         {
@@ -47,7 +45,7 @@ namespace sampleinvoice.Controllers
                         i.Customer.Contains(searchString) ||
                         i.CustomerPO.Contains(searchString));
                 }
-                else // Load all invoices if search string is empty
+                else
                 {
                     return await _context.Invoices.Where(i => !i.IsDeleted).ToListAsync();
                 }
@@ -61,15 +59,16 @@ namespace sampleinvoice.Controllers
             }
         }
 
-        // GET: api/Invoices/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Invoice>> GetInvoiceById(int id)
         {
             try
             {
-                var invoice = await _context.Invoices.FindAsync(id);
+                var invoice = await _context.Invoices
+                    .Include(i => i.InvoiceItems)
+                    .FirstOrDefaultAsync(i => i.InvoiceId == id);
 
-                if (invoice == null || invoice.IsDeleted)
+                if (invoice == null)
                 {
                     return NotFound();
                 }
@@ -83,40 +82,28 @@ namespace sampleinvoice.Controllers
             }
         }
 
-        // POST: api/Invoices
         [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice(Invoice invoice, string invoiceItems)
+        public async Task<ActionResult<Invoice>> CreateInvoice(Invoice invoice)
         {
             try
             {
                 if (_context.Invoices.Any(i => i.InvoiceNumber == invoice.InvoiceNumber))
                 {
-                    return Conflict("Invoice number already exists.");
+                    return BadRequest("Invoice number already exists.");
                 }
-
-                var items = JsonConvert.DeserializeObject<List<InvoiceItem>>(invoiceItems);
 
                 _context.Add(invoice);
                 await _context.SaveChangesAsync();
-
-                foreach (var item in items)
-                {
-                    item.InvoiceId = invoice.InvoiceId;
-                    _context.InvoiceItems.Add(item);
-                }
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction(nameof(GetInvoiceById), new { id = invoice.InvoiceId }, invoice);
+                return Ok(invoice);
             }
             catch (Exception ex)
             {
-                return BadRequest("Unable to save changes. " + ex.Message);
+                return StatusCode(500, "Unable to save changes. " + ex.Message);
             }
         }
 
-        // PUT: api/Invoices/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInvoice(int id, Invoice invoice, string invoiceItems)
+        public async Task<IActionResult> UpdateInvoice(int id, Invoice invoice)
         {
             if (id != invoice.InvoiceId)
             {
@@ -125,19 +112,7 @@ namespace sampleinvoice.Controllers
 
             try
             {
-                var existingItems = _context.InvoiceItems.Where(item => item.InvoiceId == id);
-                _context.InvoiceItems.RemoveRange(existingItems);
-
-                var items = JsonConvert.DeserializeObject<List<InvoiceItem>>(invoiceItems);
-
-                _context.Update(invoice);
-
-                foreach (var item in items)
-                {
-                    item.InvoiceId = invoice.InvoiceId;
-                    _context.InvoiceItems.Add(item);
-                }
-
+                _context.Entry(invoice).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 return NoContent();
@@ -148,7 +123,6 @@ namespace sampleinvoice.Controllers
             }
         }
 
-        // DELETE: api/Invoices/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteInvoice(int id)
         {
@@ -161,8 +135,6 @@ namespace sampleinvoice.Controllers
                 }
 
                 invoice.IsDeleted = true;
-
-                _context.Entry(invoice).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 return NoContent();

@@ -23,8 +23,9 @@ namespace sampleinvoice.Controllers
             return View();
         }
 
-        public IActionResult Edi()
+        public IActionResult Edi(int id)
         {
+            ViewData["InvoiceId"] = id;
             return View();
         }
 
