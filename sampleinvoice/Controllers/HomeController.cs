@@ -23,7 +23,7 @@ namespace sampleinvoice.Controllers
             return View();
         }
 
-        public IActionResult Edi(int id)
+        public IActionResult Edit(int id)
         {
             ViewData["InvoiceId"] = id;
             return View();

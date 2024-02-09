@@ -6,12 +6,13 @@
 <h1>Create New Invoice</h1>
 
 <form id="invoiceForm" method="post" class="row g-3">
+    <!-- Invoice details -->
     <div class="row g-3">
         <!-- Date -->
         <div class="col-md-3">
             <div class="form-group">
                 <label asp-for="Date" class="control-label">Invoice Date</label>
-                <input asp-for="Date" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input asp-for="Date" id="invoiceDate" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
         </div>
@@ -22,15 +23,14 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label asp-for="Customer" class="control-label">Customer Name</label>
-                        <input asp-for="Customer" class="form-control" />
+                        <input asp-for="Customer" id="customerName" class="form-control" />
                         <span asp-validation-for="Customer" class="text-danger"></span>
                     </div>
                 </div>
-
                 <div class="col-md-6">
                     <div class="form-group">
                         <label asp-for="CustomerPO" class="control-label">Customer PO</label>
-                        <input asp-for="CustomerPO" class="form-control" />
+                        <input asp-for="CustomerPO" id="customerPO" class="form-control" />
                         <span asp-validation-for="CustomerPO" class="text-danger"></span>
                     </div>
                 </div>
@@ -41,97 +41,101 @@
         <div class="col-md-3">
             <div class="form-group">
                 <label asp-for="InvoiceNumber" class="control-label">Invoice Number</label>
-                <input asp-for="InvoiceNumber" class="form-control" />
+                <input asp-for="InvoiceNumber" id="invoiceNumber" class="form-control" />
                 <span asp-validation-for="InvoiceNumber" class="text-danger"></span>
             </div>
         </div>
+    </div>
 
-        <!-- Button to add products -->
-        <div class="col-md-12">
-            <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
+    <!-- Button to add products -->
+    <div class="col-md-12">
+        <button type="button" id="addProductButton" class="btn btn-primary">Add Product</button>
+    </div>
+
+    <!-- Product table -->
+    <table id="productTable" class="table">
+        <!-- Table headers -->
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Unit Cost</th>
+                <th>Subtotal</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <!-- Table body -->
+        <tbody id="productTableBody">
+            <!-- Product rows will be dynamically added here -->
+        </tbody>
+        <!-- Table footer -->
+        <tfoot>
+            <tr>
+                <td colspan="3"></td>
+                <td><label for="totalAmount">Total:</label></td>
+                <td id="totalAmount">0.00</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Invoice Items (hidden) -->
+    <input type="hidden" id="invoiceItems" name="invoiceItems" />
+
+    <!-- Other invoice details -->
+    <!-- Currency Selection -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label asp-for="Currency" class="control-label">Currency</label>
+            <select asp-for="Currency" id="currency" class="form-control">
+                <option value="INR" selected>INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+            </select>
         </div>
+    </div>
 
-        <!-- Product table -->
-        <table id="productTable" class="table">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Unit Cost</th>
-                    <th>Subtotal</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="productTableBody">
-                <!-- Product rows will be dynamically added here -->
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3"></td>
-                    <td><label for="totalAmount">Total:</label></td>
-                    <td id="totalAmount">0.00</td>
-                </tr>
-            </tfoot>
-        </table>
-
-        <!-- Invoice Items (hidden) -->
-        <input type="hidden" id="invoiceItems" name="invoiceItems" />
-
-        <!-- Currency Selection -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label asp-for="Currency" class="control-label">Currency</label>
-                <select asp-for="Currency" class="form-control">
-                    <option value="INR" selected>INR</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                </select>
-            </div>
+    <!-- Payment Method Selection -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label asp-for="PaymentMethod" class="control-label">Payment Method</label>
+            <select asp-for="PaymentMethod" id="paymentMethod" class="form-control">
+                <option value="Cash" selected>Cash</option>
+                <option value="CreditCard">Credit Card</option>
+                <option value="PayPal">PayPal</option>
+                <option value="BankTransfer">Bank Transfer</option>
+            </select>
         </div>
+    </div>
 
-        <!-- Payment Method Selection -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label asp-for="PaymentMethod" class="control-label">Payment Method</label>
-                <select asp-for="PaymentMethod" class="form-control">
-                    <option value="Cash" selected>Cash</option>
-                    <option value="CreditCard">Credit Card</option>
-                    <option value="PayPal">PayPal</option>
-                    <option value="BankTransfer">Bank Transfer</option>
-                </select>
-            </div>
+    <!-- VAT Percentage -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="vatPercentage">VAT Percentage</label>
+            <input id="vatPercentage" name="VatPercentage" class="form-control" type="number" step="0.01" />
         </div>
+    </div>
 
-        <!-- VAT Percentage -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="vatPercentage">VAT Percentage</label>
-                <input id="vatPercentage" name="vatPercentage" class="form-control" type="number" step="0.01" />
-            </div>
+    <!-- Freight Charge -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label asp-for="FreightCharge" class="control-label">Freight Charge</label>
+            <input asp-for="FreightCharge" id="freightCharge" class="form-control" />
+            <span asp-validation-for="FreightCharge" class="text-danger"></span>
         </div>
+    </div>
 
-        <!-- Freight Charge -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label asp-for="FreightCharge" class="control-label">Freight Charge</label>
-                <input asp-for="FreightCharge" class="form-control" />
-                <span asp-validation-for="FreightCharge" class="text-danger"></span>
-            </div>
+    <!-- VAT Amount -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="vatAmount">VAT Amount</label>
+            <input id="vatAmount" name="vatAmount" class="form-control" readonly />
         </div>
+    </div>
 
-        <!-- VAT Amount -->
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="vatAmount">VAT Amount</label>
-                <input id="vatAmount" class="form-control" readonly />
-            </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="col-md-12">
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
+    <!-- Submit Button -->
+    <div class="col-md-12">
+        <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 </form>
 
@@ -164,42 +168,117 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
-            $("#submitInvoiceButton").click(function () {
-                createInvoice();
+            // Add product button click event
+            $("#addProductButton").click(function () {
+                $("#addProductModal").modal("show");
+            });
+
+            // Add product modal button click event
+            $("#addProduct").click(function () {
+                addProduct();
+                $("#addProductModal").modal("hide");
+            });
+
+            // Delete product button click event
+            $(document).on("click", ".deleteProduct", function () {
+                deleteProduct($(this));
+            });
+
+            // Calculate VAT amount on VAT percentage change
+            $("#vatPercentage").on("input", function () {
+                calculateVatAmount();
+            });
+
+            // Form submission
+            $("#invoiceForm").submit(function (event) {
+                event.preventDefault();
+                prepareAndSubmitInvoice();
             });
         });
 
-        function createInvoice() {
-            var formData = {
-                InvoiceNumber: $("#InvoiceNumber").val(),
-                Customer: $("#Customer").val(),
-                Date: $("#Date").val(),
-                CustomerPO: $("#CustomerPO").val(),
-                Currency: $("#Currency").val(),
-                PaymentMethod: $("#PaymentMethod").val(),
-                VatPercentage: $("#vatPercentage").val(),
-                FreightCharge: $("#FreightCharge").val(),
-                InvoiceItems: prepareInvoiceItems()
+        function addProduct() {
+            var productName = $("#productName").val();
+            var productQuantity = $("#productQuantity").val();
+            var productUnitCost = $("#productUnitCost").val();
+            var subtotal = productQuantity * productUnitCost;
+
+            // Append new row to the product table
+            $("#productTableBody").append(
+                "<tr>" +
+                "<td>" + productName + "</td>" +
+                "<td>" + productQuantity + "</td>" +
+                "<td>" + productUnitCost + "</td>" +
+                "<td>" + subtotal.toFixed(2) + "</td>" +
+                "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
+                "</tr>"
+            );
+
+            updateInvoice();
+            clearProductFields();
+        }
+
+        function deleteProduct(element) {
+            element.closest("tr").remove();
+            updateInvoice();
+        }
+
+        function updateInvoice() {
+            var totalAmount = 0;
+            $("#productTableBody tr").each(function () {
+                totalAmount += parseFloat($(this).find("td:eq(3)").text());
+            });
+
+            $("#totalAmount").text(totalAmount.toFixed(2));
+
+            calculateVatAmount();
+        }
+
+        function calculateVatAmount() {
+            var vatPercentage = parseFloat($("#vatPercentage").val());
+            var totalAmount = parseFloat($("#totalAmount").text());
+            var vatAmount = (vatPercentage / 100) * totalAmount;
+
+            $("#vatAmount").val(vatAmount.toFixed(2));
+        }
+
+        function prepareAndSubmitInvoice() {
+            var invoiceItems = prepareInvoiceItems();
+
+            var formData = $("#invoiceForm").serializeArray();
+
+            var Data = {
+                InvoiceNumber: formData[4].value,
+                Customer: formData[2].value,
+                Date: formData[0].value,
+                CustomerPO: formData[3].value,
+                Currency: formData[6].value,
+                PaymentMethod: formData[7].value,
+                VatPercentage: parseFloat($("#vatPercentage").val()),
+                FreightCharge: parseFloat($("#freightCharge").val()),
+                InvoiceItems: invoiceItems
             };
 
             $.ajax({
-                type: "POST",
-                url: "/api/InvoicesApi/Create",
-                data: JSON.stringify(formData),
-                contentType: "application/json",
-                dataType: "json",
-                success: function (response) {
-                    // Handle success response
-                    console.log("Invoice created successfully: ", response);
-                    // Redirect or perform other actions as needed
+                url: '/api/InvoicesApi/CreateInvoice',
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify(Data),
+                success: function (data) {
+                    console.log("Invoice created successfully", data);
+                    clearFormFields();
+                    if (confirm("Invoice created successfully. Do you want to redirect to the index page?")) {
+                        window.location.href = '/Home/Index';
+                    }
                 },
                 error: function (xhr, status, error) {
-                    // Handle error response
-                    console.error("Error creating invoice: ", xhr.responseText);
-                    // Display error message to the user
+                    console.error("Error submitting invoice:", error);
+                    var response = xhr.responseJSON;
                 }
             });
         }
@@ -214,14 +293,26 @@
 
                 var item = {
                     Product: productName,
-                    Quantity: quantity,
-                    UnitPrice: unitCost
+                    Quantity: parseInt(quantity),
+                    UnitPrice: parseFloat(unitCost)
                 };
 
                 invoiceItems.push(item);
             });
 
             return invoiceItems;
+        }
+        function clearFormFields() {
+            $("#invoiceForm")[0].reset();
+            $("#productTableBody").empty();
+            $("#totalAmount").text("0.00");
+            $("#vatAmount").val("");
+        }
+
+        function clearProductFields() {
+            $("#productName").val("");
+            $("#productQuantity").val("");
+            $("#productUnitCost").val("");
         }
     </script>
 }

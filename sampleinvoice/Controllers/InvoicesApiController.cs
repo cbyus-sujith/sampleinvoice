@@ -83,36 +83,42 @@ namespace sampleinvoice.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Invoice>> CreateInvoice(Invoice invoice)
+        [Route("CreateInvoice")]
+        public IActionResult CreateInvoice([FromBody] Invoice invoice)
         {
             try
             {
-                if (_context.Invoices.Any(i => i.InvoiceNumber == invoice.InvoiceNumber))
-                {
-                    return BadRequest("Invoice number already exists.");
-                }
+                _context.Invoices.Add(invoice);
+                _context.SaveChanges();
 
-                _context.Add(invoice);
-                await _context.SaveChangesAsync();
-                return Ok(invoice);
+                return Ok(invoice); // Return the newly created invoice object
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Unable to save changes. " + ex.Message);
+                return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInvoice(int id, Invoice invoice)
+        public async Task<IActionResult> UpdateInvoice(int id, [FromBody] Invoice invoice)
         {
-            if (id != invoice.InvoiceId)
-            {
-                return BadRequest();
-            }
-
             try
             {
-                _context.Entry(invoice).State = EntityState.Modified;
+                var existingInvoice = await _context.Invoices.Include(i => i.InvoiceItems).FirstOrDefaultAsync(i => i.InvoiceId == id);
+
+                if (existingInvoice == null)
+                {
+                    return NotFound("Invoice not found.");
+                }
+                _context.InvoiceItems.RemoveRange(existingInvoice.InvoiceItems);
+                existingInvoice.Date = invoice.Date;
+                existingInvoice.Customer = invoice.Customer;
+                existingInvoice.CustomerPO = invoice.CustomerPO;
+                existingInvoice.Currency = invoice.Currency;
+                existingInvoice.PaymentMethod = invoice.PaymentMethod;
+                existingInvoice.VatPercentage = invoice.VatPercentage;
+                existingInvoice.FreightCharge = invoice.FreightCharge;
+                existingInvoice.InvoiceItems = invoice.InvoiceItems;
                 await _context.SaveChangesAsync();
 
                 return NoContent();

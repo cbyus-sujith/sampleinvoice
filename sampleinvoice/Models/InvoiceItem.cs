@@ -21,8 +21,5 @@ namespace sampleinvoice.Models
 
         [ForeignKey("Invoice")]
         public int InvoiceId { get; set; }
-
-        // Navigation property for the related invoice
-        public Invoice Invoice { get; set; }
     }
 }
