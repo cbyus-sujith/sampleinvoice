@@ -1,15 +1,14 @@
-﻿<h2>Invoices</h2>
+﻿<div style="display: flex; align-items: center;">
+    <a asp-action="Create" asp-controller="Home" class="btn btn-primary">Create New</a>
+    <form id="searchForm" style="margin-left: auto;">
+        <div class="form-group" style="display: flex;">
+            <input type="text" id="searchString" placeholder="Search..." class="form-control">
+            <input type="submit" value="Search" class="btn btn-primary">
+            <button type="button" id="clearSearch" class="btn btn-secondary" style="display: none;">Clear Search</button>
+        </div>
+    </form>
+</div>
 
-<p>
-    <a asp-action="Create" asp-controller="Home">Create New</a>
-</p>
-<form id="searchForm">
-    <div class="form-group">
-        <input type="text" id="searchString" placeholder="Search...">
-        <input type="submit" value="Search" class="btn btn-primary" />
-        <button type="button" id="clearSearch" class="btn btn-secondary" style="display: none;">Clear Search</button>
-    </div>
-</form>
 <div id="searchResult" style="display: none;"></div>
 <table id="invoicesTable" class="table">
     <thead>
@@ -25,9 +24,12 @@
         <!-- Table rows will be dynamically populated by JavaScript -->
     </tbody>
 </table>
-
+<div id="pagination" class="pagination"></div>
 <script>
     $(document).ready(function () {
+        var currentPage = 1;
+        var pageSize = 10;
+
         // Load all invoices on page load
         loadAllInvoices();
 
@@ -39,10 +41,10 @@
 
         // Clear search functionality
         $('#clearSearch').click(function () {
-            $('#searchString').val(''); // Clear the search input field
-            loadAllInvoices(); // Load all invoices
-            $('#searchResult').hide(); // Hide search result text
-            $(this).hide(); // Hide clear search button
+            $('#searchString').val('');
+            loadAllInvoices();
+            $('#searchResult').hide();
+            $(this).hide();
         });
 
         // Delete invoice functionality
@@ -72,8 +74,9 @@
                 type: 'GET',
                 success: function (data) {
                     displayInvoices(data);
-                    $('#searchResult').hide(); // Hide search result text
-                    $('#clearSearch').hide(); // Hide clear search button
+                    $('#searchResult').hide();
+                    $('#clearSearch').hide();
+                    renderPagination(data.length);
                 },
                 error: function (xhr, textStatus, errorThrown) {
                     console.log('Error:', errorThrown);
@@ -90,8 +93,9 @@
                 data: { searchString: searchString },
                 success: function (data) {
                     displayInvoices(data);
-                    $('#searchResult').text('Search results for: ' + searchString).show(); // Show search result text
-                    $('#clearSearch').show(); // Show clear search button
+                    $('#searchResult').text('Search results for: ' + searchString).show();
+                    $('#clearSearch').show();
+                    renderPagination(data.length);
                 },
                 error: function (xhr, textStatus, errorThrown) {
                     console.log('Error:', errorThrown);
@@ -100,11 +104,14 @@
         }
 
         function displayInvoices(data) {
+            var startIndex = (currentPage - 1) * pageSize;
+            var endIndex = Math.min(startIndex + pageSize, data.length);
             $('#invoicesTable tbody').empty();
             if (data.length === 0) {
                 $('#invoicesTable tbody').append('<tr><td colspan="5">No invoices found.</td></tr>');
             } else {
-                $.each(data, function (index, invoice) {
+                for (var i = startIndex; i < endIndex; i++) {
+                    var invoice = data[i];
                     var row = '<tr>' +
                         '<td>' + invoice.invoiceNumber + '</td>' +
                         '<td>' + invoice.customer + '</td>' +
@@ -117,8 +124,44 @@
                         '</td>' +
                         '</tr>';
                     $('#invoicesTable tbody').append(row);
-                });
+                }
             }
+        }
+
+        function renderPagination(totalItems) {
+            var totalPages = Math.ceil(totalItems / pageSize);
+            var pagination = $('#pagination');
+            pagination.empty();
+            var prevButton = '<a href="#" class="page-link" id="prevPage">Previous</a>';
+            pagination.append(prevButton);
+            for (var i = 1; i <= totalPages; i++) {
+                var pageLink = '<a href="#" class="page-link page-num">' + i + '</a>';
+                pagination.append(pageLink);
+            }
+            var nextButton = '<a href="#" class="page-link" id="nextPage">Next</a>';
+            pagination.append(nextButton);
+
+            $('.page-num').click(function (e) {
+                e.preventDefault();
+                currentPage = parseInt($(this).text());
+                loadAllInvoices();
+            });
+
+            $('#prevPage').click(function (e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadAllInvoices();
+                }
+            });
+
+            $('#nextPage').click(function (e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadAllInvoices();
+                }
+            });
         }
 
         function deleteInvoice(invoiceId) {

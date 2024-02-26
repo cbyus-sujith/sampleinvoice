@@ -18,5 +18,14 @@ html {
 }
 
 body {
-    margin-bottom: 60px;
+    margin-bottom: 100px;
+}
+
+#pagination {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }

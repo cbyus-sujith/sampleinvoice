@@ -3,7 +3,7 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create New Invoice</h1>
+<h1>New Invoice</h1>
 
 <form id="invoiceForm" method="post" class="row g-3">
     <!-- Invoice details -->
@@ -133,9 +133,17 @@
         </div>
     </div>
 
+    <!-- Payable Amount -->
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="payableAmount">Payable Amount</label>
+            <input id="payableAmount" class="form-control" readonly />
+        </div>
+    </div>
+
     <!-- Submit Button -->
     <div class="col-md-12">
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Create</button>
     </div>
 </form>
 
@@ -145,7 +153,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add Product Details</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -163,156 +171,167 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="addProduct">Add Product</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            // Add product button click event
-            $("#addProductButton").click(function () {
-                $("#addProductModal").modal("show");
-            });
-
-            // Add product modal button click event
-            $("#addProduct").click(function () {
-                addProduct();
-                $("#addProductModal").modal("hide");
-            });
-
-            // Delete product button click event
-            $(document).on("click", ".deleteProduct", function () {
-                deleteProduct($(this));
-            });
-
-            // Calculate VAT amount on VAT percentage change
-            $("#vatPercentage").on("input", function () {
-                calculateVatAmount();
-            });
-
-            // Form submission
-            $("#invoiceForm").submit(function (event) {
-                event.preventDefault();
-                prepareAndSubmitInvoice();
-            });
+<script>
+    $(document).ready(function () {
+        // Add product button click event
+        $("#addProductButton").click(function () {
+            $("#addProductModal").modal("show");
         });
 
-        function addProduct() {
-            var productName = $("#productName").val();
-            var productQuantity = $("#productQuantity").val();
-            var productUnitCost = $("#productUnitCost").val();
-            var subtotal = productQuantity * productUnitCost;
+        // Add product modal button click event
+        $("#addProduct").click(function () {
+            addProduct();
+            $("#addProductModal").modal("hide");
+        });
 
-            // Append new row to the product table
-            $("#productTableBody").append(
-                "<tr>" +
-                "<td>" + productName + "</td>" +
-                "<td>" + productQuantity + "</td>" +
-                "<td>" + productUnitCost + "</td>" +
-                "<td>" + subtotal.toFixed(2) + "</td>" +
-                "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
-                "</tr>"
-            );
+        // Delete product button click event
+        $(document).on("click", ".deleteProduct", function () {
+            deleteProduct($(this));
+        });
 
-            updateInvoice();
-            clearProductFields();
-        }
+        // Calculate VAT amount and payable amount on relevant input changes
+        $("#vatPercentage, #freightCharge, #discount").on("input", function () {
+            calculateAmounts();
+        });
 
-        function deleteProduct(element) {
-            element.closest("tr").remove();
-            updateInvoice();
-        }
+        // Form submission
+        $("#invoiceForm").submit(function (event) {
+            event.preventDefault();
+            prepareAndSubmitInvoice();
+        });
+    });
 
-        function updateInvoice() {
-            var totalAmount = 0;
-            $("#productTableBody tr").each(function () {
-                totalAmount += parseFloat($(this).find("td:eq(3)").text());
-            });
+    function addProduct() {
+        var productName = $("#productName").val();
+        var productQuantity = $("#productQuantity").val();
+        var productUnitCost = $("#productUnitCost").val();
+        var subtotal = productQuantity * productUnitCost;
 
-            $("#totalAmount").text(totalAmount.toFixed(2));
+        // Append new row to the product table
+        $("#productTableBody").append(
+            "<tr>" +
+            "<td>" + productName + "</td>" +
+            "<td>" + productQuantity + "</td>" +
+            "<td>" + productUnitCost + "</td>" +
+            "<td>" + subtotal.toFixed(2) + "</td>" +
+            "<td><button type='button' class='btn btn-danger btn-sm deleteProduct'>Delete</button></td>" +
+            "</tr>"
+        );
 
-            calculateVatAmount();
-        }
+        updateInvoice();
+        clearProductFields();
+    }
 
-        function calculateVatAmount() {
-            var vatPercentage = parseFloat($("#vatPercentage").val());
-            var totalAmount = parseFloat($("#totalAmount").text());
-            var vatAmount = (vatPercentage / 100) * totalAmount;
+    function deleteProduct(element) {
+        element.closest("tr").remove();
+        updateInvoice();
+    }
 
-            $("#vatAmount").val(vatAmount.toFixed(2));
-        }
+    function updateInvoice() {
+        var totalAmount = 0;
+        $("#productTableBody tr").each(function () {
+            totalAmount += parseFloat($(this).find("td:eq(3)").text());
+        });
 
-        function prepareAndSubmitInvoice() {
-            var invoiceItems = prepareInvoiceItems();
+        $("#totalAmount").text(totalAmount.toFixed(2));
 
-            var formData = $("#invoiceForm").serializeArray();
+        calculateVatAmount();
+        calculatePayableAmount();
+    }
 
-            var Data = {
-                InvoiceNumber: formData[4].value,
-                Customer: formData[2].value,
-                Date: formData[0].value,
-                CustomerPO: formData[3].value,
-                Currency: formData[6].value,
-                PaymentMethod: formData[7].value,
-                VatPercentage: parseFloat($("#vatPercentage").val()),
-                FreightCharge: parseFloat($("#freightCharge").val()),
-                InvoiceItems: invoiceItems
+    function calculateAmounts() {
+        var totalAmount = 0;
+        $("#productTableBody tr").each(function () {
+            totalAmount += parseFloat($(this).find("td:eq(3)").text());
+        });
+
+        var vatPercentage = parseFloat($("#vatPercentage").val());
+        var vatAmount = (vatPercentage / 100) * totalAmount;
+
+        var freightCharge = parseFloat($("#freightCharge").val());
+
+        var payableAmount = totalAmount + vatAmount + freightCharge;
+
+        $("#totalAmount").text(totalAmount.toFixed(2));
+        $("#vatAmount").val(vatAmount.toFixed(2));
+        $("#payableAmount").val(payableAmount.toFixed(2));
+    }
+
+    function prepareAndSubmitInvoice() {
+        var invoiceItems = prepareInvoiceItems();
+
+        var formData = $("#invoiceForm").serializeArray();
+
+        var Data = {
+            InvoiceNumber: formData[4].value,
+            Customer: formData[2].value,
+            Date: formData[0].value,
+            CustomerPO: formData[3].value,
+            Currency: formData[6].value,
+            PaymentMethod: formData[7].value,
+            VatPercentage: parseFloat($("#vatPercentage").val()),
+            FreightCharge: parseFloat($("#freightCharge").val()),
+            Discount: parseFloat($("#discount").val()),
+            InvoiceItems: invoiceItems
+        };
+
+        $.ajax({
+            url: '/api/InvoicesApi/CreateInvoice',
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify(Data),
+            success: function (data) {
+                console.log("Invoice created successfully", data);
+                clearFormFields();
+                if (confirm("Invoice created successfully. Do you want to redirect to the index page?")) {
+                    window.location.href = '/Home/Index';
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error submitting invoice:", error);
+                var response = xhr.responseJSON;
+            }
+        });
+    }
+
+    function prepareInvoiceItems() {
+        var invoiceItems = [];
+
+        $("#productTableBody tr").each(function () {
+            var productName = $(this).find("td:eq(0)").text();
+            var quantity = $(this).find("td:eq(1)").text();
+            var unitCost = $(this).find("td:eq(2)").text();
+
+            var item = {
+                Product: productName,
+                Quantity: parseInt(quantity),
+                UnitPrice: parseFloat(unitCost)
             };
 
-            $.ajax({
-                url: '/api/InvoicesApi/CreateInvoice',
-                type: 'POST',
-                contentType: 'application/json',
-                dataType: 'json',
-                data: JSON.stringify(Data),
-                success: function (data) {
-                    console.log("Invoice created successfully", data);
-                    clearFormFields();
-                    if (confirm("Invoice created successfully. Do you want to redirect to the index page?")) {
-                        window.location.href = '/Home/Index';
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error submitting invoice:", error);
-                    var response = xhr.responseJSON;
-                }
-            });
-        }
+            invoiceItems.push(item);
+        });
 
-        function prepareInvoiceItems() {
-            var invoiceItems = [];
+        return invoiceItems;
+    }
 
-            $("#productTableBody tr").each(function () {
-                var productName = $(this).find("td:eq(0)").text();
-                var quantity = $(this).find("td:eq(1)").text();
-                var unitCost = $(this).find("td:eq(2)").text();
+    function clearFormFields() {
+        $("#invoiceForm")[0].reset();
+        $("#productTableBody").empty();
+        $("#totalAmount").text("0.00");
+        $("#vatAmount").val("");
+        $("#payableAmount").val("");
+    }
 
-                var item = {
-                    Product: productName,
-                    Quantity: parseInt(quantity),
-                    UnitPrice: parseFloat(unitCost)
-                };
-
-                invoiceItems.push(item);
-            });
-
-            return invoiceItems;
-        }
-        function clearFormFields() {
-            $("#invoiceForm")[0].reset();
-            $("#productTableBody").empty();
-            $("#totalAmount").text("0.00");
-            $("#vatAmount").val("");
-        }
-
-        function clearProductFields() {
-            $("#productName").val("");
-            $("#productQuantity").val("");
-            $("#productUnitCost").val("");
-        }
-    </script>
-}
+    function clearProductFields() {
+        $("#productName").val("");
+        $("#productQuantity").val("");
+        $("#productUnitCost").val("");
+    }
+</script>

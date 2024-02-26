@@ -50,6 +50,7 @@
                     <th>Quantity</th>
                     <th>Unit Cost</th>
                     <th>Subtotal</th>
+              @*       <th></th> *@
                 </tr>
             </thead>
             <tbody id="productTableBody">
@@ -98,6 +99,14 @@
         </div>
     </div>
 
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="freightCharge" class="control-label">Freight Charge</label>
+            <input id="freightCharge" class="form-control" readonly />
+            <span id="freightChargeValidation" class="text-danger"></span>
+        </div>
+    </div>
+
     <!-- VAT Amount -->
     <div class="col-md-3">
         <div class="form-group">
@@ -106,11 +115,11 @@
         </div>
     </div>
 
+    <!-- Payable Amount -->
     <div class="col-md-3">
         <div class="form-group">
-            <label for="freightCharge" class="control-label">Freight Charge</label>
-            <input id="freightCharge" class="form-control" readonly />
-            <span id="freightChargeValidation" class="text-danger"></span>
+            <label for="payableAmount">Payable Amount</label>
+            <input id="payableAmount" class="form-control" readonly />
         </div>
     </div>
 </div>
@@ -156,9 +165,13 @@
                 var vatPercentage = parseFloat(data.vatPercentage) || 0;
                 var vatAmount = (totalSubtotal * vatPercentage) / 100;
                 var totalAmount = totalSubtotal;
+                var payableAmount = totalAmount + vatAmount + freightCharge;
+                // Display Total amount
                 $('#totalAmount').text(totalAmount.toFixed(2));
                 // Display VAT amount
                 $('#vatAmount').val(vatAmount.toFixed(2));
+                // Display payable amount
+                $("#payableAmount").val(payableAmount.toFixed(2));
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.log('Error:', textStatus, errorThrown);
