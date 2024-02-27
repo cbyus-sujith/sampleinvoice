@@ -12,24 +12,21 @@ namespace sampleinvoice.Services
             _configuration = configuration;
         }
 
-        public bool SendEmail(string toEmail, string subject, string body)
+        public bool SendEmail(string toEmail, string subject, string body, byte[] pdfBytes)
         {
             try
             {
-                // Read SMTP settings from configuration
                 string smtpServer = _configuration["SmtpSettings:SmtpServer"];
                 int smtpPort = _configuration.GetValue<int>("SmtpSettings:SmtpPort");
                 string smtpUsername = _configuration["SmtpSettings:SmtpUsername"];
                 string smtpPassword = _configuration["SmtpSettings:SmtpPassword"];
 
-                // Set up the SMTP client
                 SmtpClient client = new SmtpClient(smtpServer, smtpPort)
                 {
                     Credentials = new NetworkCredential(smtpUsername, smtpPassword),
                     EnableSsl = true
                 };
 
-                // Create and send the email
                 MailMessage message = new MailMessage(smtpUsername, toEmail)
                 {
                     Subject = subject,
@@ -37,9 +34,12 @@ namespace sampleinvoice.Services
                     IsBodyHtml = true
                 };
 
-                client.Send(message);
+                using (MemoryStream stream = new MemoryStream(pdfBytes))
+                {
+                    message.Attachments.Add(new Attachment(stream, "invoice.pdf"));
+                    client.Send(message);
+                }
 
-                // Return true indicating the email was sent successfully
                 return true;
             }
             catch (Exception ex)

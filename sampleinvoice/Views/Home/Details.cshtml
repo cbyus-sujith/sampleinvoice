@@ -1,181 +1,261 @@
-﻿@{
-    ViewData["Title"] = "Details";
-}
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Details</title>
+</head>
+<body>
+    <h1>Details</h1>
 
-<h1>Details</h1>
-
-<div class="row g-3">
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="invoiceDate" class="control-label">Invoice Date</label>
-            <input id="invoiceDate" class="form-control" type="date" readonly />
-            <span id="dateValidation" class="text-danger"></span>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="customerName" class="control-label">Customer Name</label>
-                    <input id="customerName" class="form-control" readonly />
-                    <span id="customerValidation" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="customerPO" class="control-label">Customer PO</label>
-                    <input id="customerPO" class="form-control" readonly />
-                    <span id="customerPOValidation" class="text-danger"></span>
-                </div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="invoiceDate" class="control-label">Invoice Date</label>
+                <input id="invoiceDate" class="form-control" type="date" readonly />
+                <span id="dateValidation" class="text-danger"></span>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="invoiceNumber" class="control-label">Invoice Number</label>
-            <input id="invoiceNumber" class="form-control" readonly />
-            <span id="invoiceNumberValidation" class="text-danger"></span>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="customerName" class="control-label">Customer Name</label>
+                        <input id="customerName" class="form-control" readonly />
+                        <span id="customerValidation" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="customerPO" class="control-label">Customer PO</label>
+                        <input id="customerPO" class="form-control" readonly />
+                        <span id="customerPOValidation" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="invoiceNumber" class="control-label">Invoice Number</label>
+                <input id="invoiceNumber" class="form-control" readonly />
+                <span id="invoiceNumberValidation" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Product table -->
+        <div class="col-md-12">
+            <table id="productTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Unit Cost</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3"></td>
+                        <td><label for="totalAmount">Total:</label></td>
+                        <td id="totalAmount">0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Currency Selection -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="currency" class="control-label">Currency</label>
+                <select id="currency" class="form-control" disabled>
+                    <option value="INR" selected>INR</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="paymentMethod" class="control-label">Payment Method</label>
+                <select id="paymentMethod" class="form-control" disabled>
+                    <option value="Cash" selected>Cash</option>
+                    <option value="CreditCard">Credit Card</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="BankTransfer">Bank Transfer</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- VAT Percentage -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="vatPercentage">VAT Percentage</label>
+                <input id="vatPercentage" class="form-control" type="number" step="0.01" readonly />
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="freightCharge" class="control-label">Freight Charge</label>
+                <input id="freightCharge" class="form-control" readonly />
+                <span id="freightChargeValidation" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- VAT Amount -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="vatAmount">VAT Amount</label>
+                <input id="vatAmount" class="form-control" readonly />
+            </div>
+        </div>
+
+        <!-- Payable Amount -->
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="payableAmount">Payable Amount</label>
+                <input id="payableAmount" class="form-control" readonly />
+            </div>
         </div>
     </div>
-
-    <!-- Product table -->
     <div class="col-md-12">
-        <table id="productTable" class="table">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Unit Cost</th>
-                    <th>Subtotal</th>
-              @*       <th></th> *@
-                </tr>
-            </thead>
-            <tbody id="productTableBody">
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3"></td>
-                    <td><label for="totalAmount">Total:</label></td>
-                    <td id="totalAmount">0.00</td>
-                </tr>
-            </tfoot>
-        </table>
+        <button id="printButton" class="btn btn-primary">Print as PDF</button>
+        <button id="sendButton" class="btn btn-primary">Send PDF via Email</button>
     </div>
-
-    <!-- Currency Selection -->
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="currency" class="control-label">Currency</label>
-            <select id="currency" class="form-control" disabled>
-                <option value="INR" selected>INR</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-            </select>
+    <!-- Email Popup Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Please enter the email address:</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                </div>
+            <input type="email" id="emailAddress" placeholder="Email Address">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="sendEmail">Send</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Payment Method Selection -->
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="paymentMethod" class="control-label">Payment Method</label>
-            <select id="paymentMethod" class="form-control" disabled>
-                <option value="Cash" selected>Cash</option>
-                <option value="CreditCard">Credit Card</option>
-                <option value="PayPal">PayPal</option>
-                <option value="BankTransfer">Bank Transfer</option>
-            </select>
-        </div>
-    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var invoiceId = '@Html.Raw(Json.Serialize(ViewData["InvoiceId"]))'; // Enclose this in quotes
 
-    <!-- VAT Percentage -->
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="vatPercentage">VAT Percentage</label>
-            <input id="vatPercentage" class="form-control" type="number" step="0.01" readonly />
-        </div>
-    </div>
+            // Function to handle PDF generation
+            function generatePDF() {
+                var pdf = new jsPDF();
 
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="freightCharge" class="control-label">Freight Charge</label>
-            <input id="freightCharge" class="form-control" readonly />
-            <span id="freightChargeValidation" class="text-danger"></span>
-        </div>
-    </div>
-
-    <!-- VAT Amount -->
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="vatAmount">VAT Amount</label>
-            <input id="vatAmount" class="form-control" readonly />
-        </div>
-    </div>
-
-    <!-- Payable Amount -->
-    <div class="col-md-3">
-        <div class="form-group">
-            <label for="payableAmount">Payable Amount</label>
-            <input id="payableAmount" class="form-control" readonly />
-        </div>
-    </div>
-</div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-    $(document).ready(function () {
-        var invoiceId = @Html.Raw(Json.Serialize(ViewData["InvoiceId"]));
-
-        $.ajax({
-            url: '/api/InvoicesApi/' + invoiceId,
-            type: 'GET',
-            success: function (data) {
-                $('#invoiceDate').val(data.date.substring(0, 10));
-                $('#customerName').val(data.customer);
-                $('#customerPO').val(data.customerPO);
-                $('#invoiceNumber').val(data.invoiceNumber);
-                $('#currency').val(data.currency);
-                $('#paymentMethod').val(data.paymentMethod);
-                $('#vatPercentage').val(data.vatPercentage);
-                $('#freightCharge').val(data.freightCharge);
-
-                // Populate product table and calculate total amount
-                var productsHtml = '';
-                var totalSubtotal = 0;
-
-                if (data.invoiceItems && data.invoiceItems.length > 0) {
-                    data.invoiceItems.forEach(function (item) {
-                        var subtotal = item.quantity * item.unitPrice;
-                        totalSubtotal += subtotal;
-                        productsHtml += '<tr>' +
-                            '<td>' + item.product + '</td>' +
-                            '<td>' + item.quantity + '</td>' +
-                            '<td>' + item.unitPrice + '</td>' +
-                            '<td>' + subtotal.toFixed(2) + '</td>' +
-                            '</tr>';
-                    });
-                }
-
-                $('#productTableBody').html(productsHtml);
-
-                // Calculate total amount
-                var freightCharge = parseFloat(data.freightCharge) || 0;
-                var vatPercentage = parseFloat(data.vatPercentage) || 0;
-                var vatAmount = (totalSubtotal * vatPercentage) / 100;
-                var totalAmount = totalSubtotal;
-                var payableAmount = totalAmount + vatAmount + freightCharge;
-                // Display Total amount
-                $('#totalAmount').text(totalAmount.toFixed(2));
-                // Display VAT amount
-                $('#vatAmount').val(vatAmount.toFixed(2));
-                // Display payable amount
-                $("#payableAmount").val(payableAmount.toFixed(2));
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log('Error:', textStatus, errorThrown);
+                // Generate PDF from HTML
+                pdf.html(document.body, {
+                    callback: function (pdf) {
+                        // Save the PDF
+                        pdf.save('invoice_details.pdf');
+                    }
+                });
             }
+
+            // Attach click event to print button
+            $('#printButton').on('click', function () {
+                generatePDF();
+            });
+
+            // Fetch data and populate details
+            $.ajax({
+                url: '/api/InvoicesApi/' + invoiceId,
+                type: 'GET',
+                success: function (data) {
+                    $('#invoiceDate').val(data.date.substring(0, 10));
+                    $('#customerName').val(data.customer);
+                    $('#customerPO').val(data.customerPO);
+                    $('#invoiceNumber').val(data.invoiceNumber);
+                    $('#currency').val(data.currency);
+                    $('#paymentMethod').val(data.paymentMethod);
+                    $('#vatPercentage').val(data.vatPercentage);
+                    $('#freightCharge').val(data.freightCharge);
+
+                    // Populate product table and calculate total amount
+                    var productsHtml = '';
+                    var totalSubtotal = 0;
+
+                    if (data.invoiceItems && data.invoiceItems.length > 0) {
+                        data.invoiceItems.forEach(function (item) {
+                            var subtotal = item.quantity * item.unitPrice;
+                            totalSubtotal += subtotal;
+                            productsHtml += '<tr>' +
+                                '<td>' + item.product + '</td>' +
+                                '<td>' + item.quantity + '</td>' +
+                                '<td>' + item.unitPrice + '</td>' +
+                                '<td>' + subtotal.toFixed(2) + '</td>' +
+                                '</tr>';
+                        });
+                    }
+
+                    $('#productTableBody').html(productsHtml);
+
+                    // Calculate total amount
+                    var freightCharge = parseFloat(data.freightCharge) || 0;
+                    var vatPercentage = parseFloat(data.vatPercentage) || 0;
+                    var vatAmount = (totalSubtotal * vatPercentage) / 100;
+                    var totalAmount = totalSubtotal;
+                    var payableAmount = totalAmount + vatAmount + freightCharge;
+                    // Display Total amount
+                    $('#totalAmount').text(totalAmount.toFixed(2));
+                    // Display VAT amount
+                    $('#vatAmount').val(vatAmount.toFixed(2));
+                    // Display payable amount
+                    $("#payableAmount").val(payableAmount.toFixed(2));
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('Error:', textStatus, errorThrown);
+                }
+            });
+
+            // Attach click event to send button
+            $('#sendButton').on('click', function () {
+                $('#emailModal').css('display', 'block');
+            });
+
+            // Close the modal when the close button is clicked
+            $('.close').on('click', function () {
+                $('#emailModal').css('display', 'none');
+            });
+
+            // AJAX request to send the PDF via email
+            $('#sendEmail').on('click', function () {
+                var email = $('#emailAddress').val();
+                var pdfData = new FormData();
+                pdfData.append('pdfFile', new Blob(['sample PDF content'], { type: 'application/pdf' }));
+                pdfData.append('email', email);
+
+                $.ajax({
+                    url: '/api/sendPDF',
+                    type: 'POST',
+                    data: pdfData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        alert('PDF sent successfully to ' + email);
+                        $('#emailModal').css('display', 'none');
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log('Error:', textStatus, errorThrown);
+                    }
+                });
+            });
         });
-    });
-</script>
+    </script>
+
+</body>
+</html>

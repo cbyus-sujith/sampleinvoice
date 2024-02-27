@@ -118,8 +118,8 @@
                         '<td>' + new Date(invoice.date).toLocaleDateString() + '</td>' +
                         '<td>' + invoice.customerPO + '</td>' +
                         '<td>' +
+                        '<a href="/Home/Details/' + invoice.invoiceId + '">View</a> | ' +
                         '<a href="/Home/Edit/' + invoice.invoiceId + '">Edit</a> | ' +
-                        '<a href="/Home/Details/' + invoice.invoiceId + '">Details</a> | ' +
                         '<a href="#" class="deleteInvoice" data-id="' + invoice.invoiceId + '">Delete</a>' +
                         '</td>' +
                         '</tr>';
